@@ -1,4 +1,4 @@
-package core_domain
+package domain
 
 const UserRole = "user"
 const AdminRole = "admin"

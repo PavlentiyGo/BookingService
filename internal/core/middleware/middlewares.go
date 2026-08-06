@@ -7,6 +7,7 @@ import (
 	core_logger "avitoBooking/internal/core/logger"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -17,7 +18,7 @@ type Middleware = func(handler http.Handler) http.Handler
 
 func ChainMiddlewares(handler http.Handler, middlewares ...Middleware) http.Handler {
 
-	for i := len(middlewares) - 1; i >= 0; i++ {
+	for i := len(middlewares) - 1; i >= 0; i-- {
 		handler = middlewares[i](handler)
 	}
 	return handler
@@ -40,13 +41,13 @@ func Logger(logger *core_logger.Logger) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-			logger.With(
+			loggerWith := logger.With(
 				zap.String("RequestId", r.Header.Get("X-Request-ID")),
 				zap.String("Method", r.Method),
 				zap.String("URL", r.URL.String()),
 			)
 
-			ctx := core_logger.CtxWithLogger(r.Context(), logger)
+			ctx := core_logger.CtxWithLogger(r.Context(), loggerWith)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
@@ -68,7 +69,12 @@ func Auth(jwtProvider auth.JwtProvider, roles ...string) Middleware {
 				responser.ErrorResponse(core_errors.ErrNotAuthorized)
 				return
 			}
-			token, err := jwtProvider.ParseToken(r.Header.Get("Authorization"))
+			splitedToken := strings.Split(authorization, " ")
+			if splitedToken[0] != "Bearer" {
+				responser.ErrorResponse(core_errors.ErrWrongAuthType)
+				return
+			}
+			token, err := jwtProvider.ParseToken(splitedToken[1])
 			if err != nil {
 				responser.ErrorResponse(err)
 				return
@@ -77,7 +83,9 @@ func Auth(jwtProvider auth.JwtProvider, roles ...string) Middleware {
 				responser.ErrorResponse(core_errors.ErrForbidden)
 				return
 			}
-			next.ServeHTTP(w, r)
+			ctx := ContextWithUserId(r.Context(), token.UserId)
+			ctx = ContextWithUserRole(ctx, token.Role)
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
@@ -86,7 +94,7 @@ func PanicRecoverer() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-			go func() {
+			defer func() {
 				p := recover()
 				if p != nil {
 					responser := core_http_server.NewResponser(w, r.Context())

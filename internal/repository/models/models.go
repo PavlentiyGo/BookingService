@@ -1,0 +1,30 @@
+package models
+
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
+
+type RoomModel struct {
+	Id          uuid.UUID
+	Name        string
+	Description *string
+	Capacity    int
+	CreatedAt   time.Time
+}
+
+type RoomScheduleModel struct {
+	ScheduleId uuid.UUID
+	RoomId     uuid.UUID
+	DaysOfWeek []int
+	StartTime  time.Time
+	EndTime    time.Time
+}
+
+type SlotModel struct {
+	Id        uuid.UUID
+	RoomId    uuid.UUID
+	StartTime time.Time
+	EndTime   time.Time
+}

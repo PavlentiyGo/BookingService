@@ -15,7 +15,7 @@ func chainRoutes(routes ...core_routes.Route) *http.ServeMux {
 	for _, route := range routes {
 
 		pattern := fmt.Sprintf("%s %s", route.Method, route.Path)
-		handler := core_middleware.ChainMiddlewares(route.Handler)
+		handler := core_middleware.ChainMiddlewares(route.Handler, route.Middlewares...)
 
 		mux.Handle(pattern, handler)
 
@@ -33,9 +33,11 @@ func NewServer(
 
 	mux.Handle("/metrics", promhttp.Handler())
 
+	handler := core_middleware.ChainMiddlewares(mux, middlewares...)
+
 	server := &http.Server{
 		Addr:    ":" + config.Addr,
-		Handler: mux,
+		Handler: handler,
 	}
 
 	return server

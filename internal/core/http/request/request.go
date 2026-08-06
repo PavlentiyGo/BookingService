@@ -1,4 +1,4 @@
-package request
+package core_http_request
 
 import (
 	core_errors "avitoBooking/internal/core/errors"

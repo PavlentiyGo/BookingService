@@ -5,17 +5,21 @@ import (
 	core_domain "avitoBooking/internal/core/domain"
 	core_middleware "avitoBooking/internal/core/middleware"
 	"avitoBooking/internal/core/routes"
+	handlers_service "avitoBooking/internal/handlers/service"
 )
 
 type Handlers struct {
 	jwtProvider auth.JwtProvider
+	service     handlers_service.BookingService
 }
 
 func NewHandlers(
 	provider auth.JwtProvider,
+	service handlers_service.BookingService,
 ) *Handlers {
 	return &Handlers{
 		jwtProvider: provider,
+		service:     service,
 	}
 }
 func (h *Handlers) RoomsRoutes() []core_routes.Route {
@@ -29,7 +33,7 @@ func (h *Handlers) RoomsRoutes() []core_routes.Route {
 			},
 		}, {
 			Method:  "POST",
-			Path:    "rooms/create",
+			Path:    "/rooms/create",
 			Handler: h.CreateRoom,
 			Middlewares: []core_middleware.Middleware{
 				core_middleware.Auth(h.jwtProvider, core_domain.AdminRole),
@@ -60,7 +64,7 @@ func (h *Handlers) ScheduleRoutes() []core_routes.Route {
 		{
 			Method:  "POST",
 			Path:    "/rooms/{roomId}/schedule/create",
-			Handler: h.PostSchedule,
+			Handler: h.CreateSchedule,
 			Middlewares: []core_middleware.Middleware{
 				core_middleware.Auth(h.jwtProvider, core_domain.AdminRole),
 			},
@@ -72,7 +76,7 @@ func (h *Handlers) SlotsRoutes() []core_routes.Route {
 	return []core_routes.Route{
 		{
 			Method:  "GET",
-			Path:    "/rooms/{roomId}/schedule/create",
+			Path:    "/rooms/{roomId}/slots/list",
 			Handler: h.GetSlots,
 			Middlewares: []core_middleware.Middleware{
 				core_middleware.Auth(h.jwtProvider, core_domain.AdminRole, core_domain.UserRole),
