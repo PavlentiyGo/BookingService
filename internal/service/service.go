@@ -5,20 +5,21 @@ import (
 )
 
 type Service struct {
-	txManager    repository.TxManager
-	authRepo     repository.AuthRepository
-	bookingRepo  repository.BookingRepository
-	roomsRepo    repository.RoomsRepository
-	scheduleRepo repository.ScheduleRepository
-	slotsRepo    repository.SlotsRepository
+	txManager         repository.TxManager
+	authRepo          repository.AuthRepository
+	bookingRepo       repository.BookingRepository
+	roomsRepo         repository.RoomsRepository
+	conferenceService *ConferenceService
 }
 
 func NewService(
 	txManager repository.TxManager,
+	conferenceService *ConferenceService,
 ) *Service {
 
 	service := &Service{
-		txManager: txManager,
+		txManager:         txManager,
+		conferenceService: conferenceService,
 	}
 
 	storage, ok := txManager.(repository.Storage)

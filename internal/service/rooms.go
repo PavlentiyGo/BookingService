@@ -17,11 +17,6 @@ func (s *Service) CreateRoom(
 	if err := room.Validate(); err != nil {
 		return domain.Room{}, err
 	}
-	newId, err := uuid.NewUUID()
-	if err != nil {
-		return domain.Room{}, fmt.Errorf("failed to create uuid for room")
-	}
-	room.Id = newId
 	newRoom, err := s.roomsRepo.CreateRoom(ctx, room)
 	if err != nil {
 		return domain.Room{}, err
@@ -41,11 +36,6 @@ func (s *Service) CreateSchedule(
 	if err := schedule.Validate(); err != nil {
 		return domain.RoomSchedule{}, err
 	}
-	newUuid, err := uuid.NewUUID()
-	if err != nil {
-		return domain.RoomSchedule{}, fmt.Errorf("failed to create new uuid for schedule: %w", err)
-	}
-	schedule.ScheduleId = &newUuid
 	now := time.Now()
 	schedule.StartTime = time.Date(
 		now.Year(),
@@ -75,5 +65,9 @@ func (s *Service) GetSlots(
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse dateTime: %w: %w", err, core_errors.ErrInvalidDateTime)
 	}
+	if dateTime.Before(time.Now()) {
+		return nil, fmt.Errorf("date time must be after current date: %w", core_errors.ErrInvalidDateTime)
+	}
+
 	return s.roomsRepo.GetSlots(ctx, roomId, dateTime)
 }

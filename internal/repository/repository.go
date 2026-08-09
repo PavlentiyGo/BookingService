@@ -13,6 +13,30 @@ import (
 type AuthRepository interface {
 }
 type BookingRepository interface {
+	CreateBooking(
+		ctx context.Context,
+		booking domain.BookingRequest,
+	) (domain.BookingRequest, error)
+	GetSlotById(
+		ctx context.Context,
+		slotId uuid.UUID,
+	) (domain.Slot, error)
+	ChangeBookingStatus(
+		ctx context.Context,
+		bookingId uuid.UUID,
+		newStatus domain.BookingStatus,
+	) (domain.BookingRequest, error)
+	GetBookingsByUserId(
+		ctx context.Context,
+		userId uuid.UUID,
+	) ([]domain.BookingRequest, error)
+	GetBookingsCount(
+		ctx context.Context,
+	) (int, error)
+	GetBookingsWithPagination(
+		ctx context.Context,
+		pagination domain.Pagination,
+	) ([]domain.BookingRequest, error)
 }
 type RoomsRepository interface {
 	CreateRoom(
@@ -31,10 +55,6 @@ type RoomsRepository interface {
 		roomId uuid.UUID,
 		dateTime time.Time,
 	) ([]domain.Slot, error)
-}
-type ScheduleRepository interface {
-}
-type SlotsRepository interface {
 }
 type Executor interface {
 	Exec(context.Context, string, ...any) (pgconn.CommandTag, error)

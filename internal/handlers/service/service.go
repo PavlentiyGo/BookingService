@@ -16,6 +16,23 @@ type BookingService interface {
 type authService interface {
 }
 type bookingService interface {
+	CreateBooking(
+		ctx context.Context,
+		booking domain.BookingRequest,
+	) (domain.BookingRequest, error)
+	GetMyBookings(
+		ctx context.Context,
+		userId uuid.UUID,
+	) ([]domain.BookingRequest, error)
+	CancelUserBooking(
+		ctx context.Context,
+		userId uuid.UUID,
+		bookingId string,
+	) (domain.BookingRequest, error)
+	GetBookings(
+		ctx context.Context,
+		pagination domain.Pagination,
+	) ([]domain.BookingRequest, int, error)
 }
 type roomsService interface {
 	CreateRoom(

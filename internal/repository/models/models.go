@@ -1,6 +1,7 @@
 package models
 
 import (
+	"avitoBooking/internal/core/domain"
 	"time"
 
 	"github.com/google/uuid"
@@ -27,4 +28,13 @@ type SlotModel struct {
 	RoomId    uuid.UUID
 	StartTime time.Time
 	EndTime   time.Time
+}
+
+type BookingModel struct {
+	Id             uuid.UUID
+	SlotId         uuid.UUID
+	UserId         uuid.UUID
+	Status         domain.BookingStatus
+	ConferenceLink *string
+	CreatedAt      time.Time
 }

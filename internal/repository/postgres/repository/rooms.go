@@ -33,19 +33,23 @@ func (r *roomsRepository) CreateRoom(
 	defer cancel()
 
 	sqlQuery := `
-	INSERT INTO rooms(id,name,description,capacity)
-	VALUES($1,$2,$3,$4)
-	RETURNING createdAt;
+	INSERT INTO rooms(name,description,capacity)
+	VALUES($1,$2,$3)
+	RETURNING id,name,description,capacity,createdAt;
 	`
 	row := r.TxManager.GetExecutor(ctx).QueryRow(
 		ctx, sqlQuery,
-		room.Id, room.Name,
+		room.Name,
 		room.Description,
 		room.Capacity,
 	)
 
 	var model models.RoomModel
 	err := row.Scan(
+		&model.Id,
+		&model.Name,
+		&model.Description,
+		&model.Capacity,
 		&model.CreatedAt,
 	)
 	if err != nil {
@@ -57,8 +61,14 @@ func (r *roomsRepository) CreateRoom(
 		}
 		return domain.Room{}, fmt.Errorf("row scan: %w", err)
 	}
-	room.CreatedAt = &model.CreatedAt
-	return room, nil
+	createdRoom := domain.Room{
+		Id:          model.Id,
+		Name:        model.Name,
+		Description: model.Description,
+		Capacity:    &model.Capacity,
+		CreatedAt:   &model.CreatedAt,
+	}
+	return createdRoom, nil
 }
 func (r *roomsRepository) GetRooms(
 	ctx context.Context,
@@ -102,15 +112,14 @@ func (r *roomsRepository) CreateSchedule(
 	defer cancel()
 
 	sqlQuery := `
-	INSERT INTO schedules(id,room_id,days_of_week,start_time,end_time)
-	VALUES($1,$2,$3,$4,$5)
+	INSERT INTO schedules(room_id,days_of_week,start_time,end_time)
+	VALUES($1,$2,$3,$4)
 	RETURNING id,room_id,days_of_week,start_time,end_time;
 	`
 	var model models.RoomScheduleModel
 	err := r.TxManager.GetExecutor(ctx).QueryRow(
 		ctx,
 		sqlQuery,
-		roomSchedule.ScheduleId,
 		roomSchedule.RoomId,
 		roomSchedule.DaysOfWeek,
 		roomSchedule.StartTime,
@@ -161,7 +170,6 @@ func (r *roomsRepository) GetSlots(
 	AND  slots.room_id = $1
 	AND slots.start_time::date = $2::date;
 	`
-	fmt.Println(dateTime)
 	rows, err := r.TxManager.GetExecutor(ctx).Query(
 		ctx,
 		sqlQuery,

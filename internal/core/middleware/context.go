@@ -6,9 +6,9 @@ import (
 	"github.com/google/uuid"
 )
 
-type ctxUserIdKey = struct{}
+type ctxUserIdKey struct{}
 
-type ctxUserRoleKey = struct{}
+type ctxUserRoleKey struct{}
 
 func ContextWithUserId(
 	ctx context.Context,
@@ -25,7 +25,11 @@ func ContextWithUserRole(
 func UserIdFromContext(
 	ctx context.Context,
 ) uuid.UUID {
-	return ctx.Value(ctxUserIdKey{}).(uuid.UUID)
+	userId, ok := ctx.Value(ctxUserIdKey{}).(uuid.UUID)
+	if !ok {
+		panic("no userId in jwt token")
+	}
+	return userId
 }
 func UserRoleFromContext(
 	ctx context.Context,

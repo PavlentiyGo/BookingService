@@ -11,7 +11,7 @@ CREATE TABLE users(
 );
 
 CREATE TABLE rooms(
-    id UUID PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR UNIQUE NOT NULL,
     description VARCHAR,
     capacity INTEGER DEFAULT 0,
@@ -19,7 +19,7 @@ CREATE TABLE rooms(
 );
 
 CREATE TABLE schedules(
-    id UUID PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     room_id UUID UNIQUE NOT NULL REFERENCES rooms(id),
     days_of_week SMALLINT[] CHECK ( array_length(days_of_week,1) <= 7 ),
     start_time TIMESTAMPTZ NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE schedules(
 );
 
 CREATE TABLE slots(
-    id UUID PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     room_id UUID NOT NULL REFERENCES rooms(id),
     start_time TIMESTAMPTZ NOT NULL,
     end_time TIMESTAMPTZ NOT NULL,
@@ -36,10 +36,13 @@ CREATE TABLE slots(
 );
 
 CREATE TABLE bookings(
-    id UUID PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     slot_id UUID NOT NULL REFERENCES slots(id),
     user_id UUID NOT NULL REFERENCES users(id),
-    status statuses NOT NULL,
+    status statuses DEFAULT 'active',
     conference_link VARCHAR,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+CREATE UNIQUE INDEX idx_bookings_one_active_per_slot
+    ON bookings(slot_id)
+    WHERE status = 'active'

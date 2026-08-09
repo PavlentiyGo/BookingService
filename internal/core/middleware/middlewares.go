@@ -85,6 +85,7 @@ func Auth(jwtProvider auth.JwtProvider, roles ...string) Middleware {
 			}
 			ctx := ContextWithUserId(r.Context(), token.UserId)
 			ctx = ContextWithUserRole(ctx, token.Role)
+
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

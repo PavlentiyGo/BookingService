@@ -6,6 +6,7 @@ import (
 	repository_errors "avitoBooking/internal/repository/erorrs"
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -30,36 +31,49 @@ func NewResponser(
 }
 
 type errorValue struct {
+	mapError   error
 	statusCode int
 	error      string
 	logLevel   string
 }
 
-var errorMapper = map[error]errorValue{
-	core_errors.ErrExpiredToken:             {statusCode: http.StatusBadRequest, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
-	core_errors.ErrWrongAuthType:            {statusCode: http.StatusBadRequest, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
-	core_errors.ErrInvalidRequest:           {statusCode: http.StatusBadRequest, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
-	repository_errors.ErrRoomAlreadyExists:  {statusCode: http.StatusBadRequest, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
-	core_errors.ErrInvalidRoomCapacity:      {statusCode: http.StatusBadRequest, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
-	core_errors.ErrWrongRoomId:              {statusCode: http.StatusBadRequest, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
-	core_errors.ErrInvalidDays:              {statusCode: http.StatusBadRequest, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
-	core_errors.ErrInvalidTime:              {statusCode: http.StatusBadRequest, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
-	core_errors.ErrMissingDate:              {statusCode: http.StatusBadRequest, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
-	repository_errors.ErrRoomScheduleExists: {statusCode: http.StatusBadRequest, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
-	core_errors.ErrInvalidDateTime:          {statusCode: http.StatusBadRequest, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
-
-	repository_errors.ErrRoomNotFound: {statusCode: http.StatusNotFound, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
-
-	core_errors.ErrNotAuthorized: {statusCode: http.StatusUnauthorized, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
-
-	core_errors.ErrForbidden: {statusCode: http.StatusForbidden, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
+var errorSlice = []errorValue{
+	{mapError: core_errors.ErrExpiredToken, statusCode: http.StatusBadRequest, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
+	{mapError: core_errors.ErrWrongAuthType, statusCode: http.StatusBadRequest, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
+	{mapError: core_errors.ErrInvalidRequest, statusCode: http.StatusBadRequest, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
+	{mapError: repository_errors.ErrRoomAlreadyExists, statusCode: http.StatusBadRequest, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
+	{mapError: core_errors.ErrInvalidRoomCapacity, statusCode: http.StatusBadRequest, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
+	{mapError: core_errors.ErrWrongRoomId, statusCode: http.StatusBadRequest, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
+	{mapError: core_errors.ErrInvalidDays, statusCode: http.StatusBadRequest, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
+	{mapError: core_errors.ErrInvalidTime, statusCode: http.StatusBadRequest, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
+	{mapError: core_errors.ErrMissingDate, statusCode: http.StatusBadRequest, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
+	{mapError: repository_errors.ErrRoomScheduleExists, statusCode: http.StatusBadRequest, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
+	{mapError: core_errors.ErrInvalidDateTime, statusCode: http.StatusBadRequest, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
+	{mapError: core_errors.ErrInvalidSlotId, statusCode: http.StatusBadRequest, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
+	{mapError: repository_errors.ErrRoomNotFound, statusCode: http.StatusNotFound, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
+	{mapError: core_errors.ErrNotAuthorized, statusCode: http.StatusUnauthorized, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
+	{mapError: core_errors.ErrForbidden, statusCode: http.StatusForbidden, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
+	{mapError: repository_errors.ErrSlotIdConflict, statusCode: http.StatusConflict, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
+	{mapError: core_errors.ErrConferenceServiceUnavailable, statusCode: http.StatusBadGateway, error: core_errors.ErrInternalError.Error(), logLevel: "ERROR"},
+	{mapError: repository_errors.ErrBookingNoExists, statusCode: http.StatusNotFound, error: core_errors.ErrInternalError.Error(), logLevel: "DEBUG"},
+	{mapError: repository_errors.ErrSlotNotFound, statusCode: http.StatusNotFound, error: core_errors.ErrInternalError.Error(), logLevel: "DEBUG"},
+	{mapError: core_errors.ErrSlotInThePast, statusCode: http.StatusBadRequest, error: core_errors.ErrInternalError.Error(), logLevel: "DEBUG"},
+	{mapError: core_errors.ErrInvalidBookingId, statusCode: http.StatusBadRequest, error: core_errors.ErrInternalError.Error(), logLevel: "DEBUG"},
 }
 
 func (r *Responser) ErrorResponse(
 	err error,
 ) {
+	var val errorValue
+	ok := false
+	for i := 0; i < len(errorSlice); i++ {
+		if errors.Is(err, errorSlice[i].mapError) {
+			val = errorSlice[i]
+			ok = true
+			break
+		}
+	}
 
-	val, ok := errorMapper[err]
 	if !ok {
 		r.logger.Error("got INTERNAL error", zap.Error(err))
 		r.writeErrorJson(http.StatusInternalServerError, core_errors.ErrInternalError.Error(), err.Error())
@@ -68,6 +82,8 @@ func (r *Responser) ErrorResponse(
 	switch val.logLevel {
 	case "DEBUG":
 		r.logger.Debug("got error", zap.Error(err))
+	case "ERROR":
+		r.logger.Error("got INTERNAL error", zap.Error(err))
 	}
 	r.writeErrorJson(val.statusCode, val.error, err.Error())
 }

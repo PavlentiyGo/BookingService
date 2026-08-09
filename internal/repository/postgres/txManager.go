@@ -20,8 +20,6 @@ type TxManager struct {
 	authRepo       repository.AuthRepository
 	bookingRepo    repository.BookingRepository
 	roomsRepo      repository.RoomsRepository
-	scheduleRepo   repository.ScheduleRepository
-	slotsRepo      repository.SlotsRepository
 }
 type txCtxKey struct{}
 
@@ -34,6 +32,7 @@ func NewTxManager(
 		requestTimeout: timeout,
 	}
 	txManager.roomsRepo = postgres_repository.NewRoomsRepository(txManager)
+	txManager.bookingRepo = postgres_repository.NewBookingRepository(txManager)
 	return txManager
 }
 

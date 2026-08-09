@@ -36,3 +36,16 @@ func SlotModelToDomain(
 		EndTime:   slot.EndTime,
 	}
 }
+func BookingModelToDomain(
+	booking BookingModel,
+) domain.BookingRequest {
+	return domain.BookingRequest{
+		Id:             booking.Id,
+		SlotId:         booking.SlotId,
+		UserId:         booking.UserId,
+		Status:         booking.Status,
+		ConferenceLink: booking.ConferenceLink,
+		CreatedAt:      booking.CreatedAt,
+	}
+
+}

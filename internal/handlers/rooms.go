@@ -95,7 +95,6 @@ func (h *Handlers) CreateSchedule(
 		StartTime:  startTime,
 		EndTime:    endTime,
 	}
-	fmt.Println(roomScheduleDomain.StartTime, roomScheduleDomain.EndTime)
 	createdSchedule, err := h.service.CreateSchedule(ctx, roomScheduleDomain)
 	if err != nil {
 		responser.ErrorResponse(err)
@@ -111,7 +110,7 @@ func (h *Handlers) CreateSchedule(
 		},
 	}
 
-	responser.WriteJson(http.StatusOK, resp)
+	responser.WriteJson(http.StatusCreated, resp)
 }
 
 func (h *Handlers) GetSlots(

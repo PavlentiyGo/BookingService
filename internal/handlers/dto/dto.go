@@ -1,6 +1,6 @@
 package dto
 
-import "time"
+import "avitoBooking/internal/core/domain"
 
 type RoomDto struct {
 	Id          string `json:"id"`
@@ -46,14 +46,24 @@ type SlotDto struct {
 	Endtime   string `json:"endTime"`
 }
 type CreateBookingRequest struct {
-	SlotId         string `json:"id"`
+	SlotId         string `json:"slotId" validate:"required"`
 	ConferenceLink bool   `json:"createConferenceLink"`
 }
 type BookingDto struct {
-	Id             string    `json:"id"`
-	SlotId         string    `json:"slotId"`
-	UserId         string    `json:"userId"`
-	Status         string    `json:"status"`
-	ConferenceLink string    `json:"conferenceLink"`
-	CreatedAt      time.Time `json:"createdAt"`
+	Id             string               `json:"id"`
+	SlotId         string               `json:"slotId"`
+	UserId         string               `json:"userId"`
+	Status         domain.BookingStatus `json:"status"`
+	ConferenceLink string               `json:"conferenceLink"`
+	CreatedAt      string               `json:"createdAt"`
+}
+
+type PaginationRequest struct {
+	Page     *int `json:"page" validate:"omitempty,numeric"`
+	PageSize *int `json:"pageSize" validate:"omitempty,numeric"`
+}
+type PaginationResponse struct {
+	Page     int `json:"page"`
+	PageSize int `json:"pageSize"`
+	Total    int `json:"total"`
 }

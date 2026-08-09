@@ -47,8 +47,8 @@ func main() {
 		return
 	}
 	txManager := postgres.NewTxManager(pool, config.DbConfig.Timeout)
-
-	serviceLayer := service.NewService(txManager)
+	conferenceService := service.NewConferenceService(true)
+	serviceLayer := service.NewService(txManager, conferenceService)
 	handlersLayer := handlers.NewHandlers(jwtProvider, serviceLayer)
 
 	var routes []core_routes.Route
