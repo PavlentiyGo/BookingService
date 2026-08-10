@@ -3,11 +3,13 @@ package service
 import (
 	"avitoBooking/internal/core/domain"
 	core_errors "avitoBooking/internal/core/errors"
+	core_logger "avitoBooking/internal/core/logger"
 	"context"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 func (s *Service) CreateRoom(
@@ -33,6 +35,9 @@ func (s *Service) CreateSchedule(
 	ctx context.Context,
 	schedule domain.RoomSchedule,
 ) (domain.RoomSchedule, error) {
+	Log := core_logger.FromContext(ctx)
+	Log = Log.With(zap.String("func", "service-CreateSchedule"))
+
 	if err := schedule.Validate(); err != nil {
 		return domain.RoomSchedule{}, err
 	}
@@ -53,7 +58,23 @@ func (s *Service) CreateSchedule(
 		schedule.EndTime.Minute(),
 		0, 0, time.UTC,
 	)
-	return s.roomsRepo.CreateSchedule(ctx, schedule)
+	var createdSchedule domain.RoomSchedule
+	err := s.txManager.WithinTx(ctx, func(txCtx context.Context) error {
+		roomSchedule, err := s.roomsRepo.CreateSchedule(ctx, schedule)
+		if err != nil {
+			return fmt.Errorf("failed to create room schedule: %w", err)
+		}
+		createdSchedule = roomSchedule
+		err = s.worker.CreateSlots(txCtx, &roomSchedule)
+		if err != nil {
+			Log.Error("failed to create slots for room schedule", zap.Error(err))
+		}
+		return nil
+	})
+	if err != nil {
+		return domain.RoomSchedule{}, fmt.Errorf("error during tx: %w", err)
+	}
+	return createdSchedule, nil
 }
 func (s *Service) GetSlots(
 	ctx context.Context,

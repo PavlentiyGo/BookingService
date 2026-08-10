@@ -47,8 +47,15 @@ func main() {
 		return
 	}
 	txManager := postgres.NewTxManager(pool, config.DbConfig.Timeout)
+
+	logger.Debug("creating worker")
+	worker := service.NewWorker(txManager)
+
+	ctxForWorker := core_logger.CtxWithLogger(ctx, logger)
+	go worker.Start(ctxForWorker)
+
 	conferenceService := service.NewConferenceService(true)
-	serviceLayer := service.NewService(txManager, conferenceService)
+	serviceLayer := service.NewService(txManager, conferenceService, worker)
 	handlersLayer := handlers.NewHandlers(jwtProvider, serviceLayer)
 
 	var routes []core_routes.Route

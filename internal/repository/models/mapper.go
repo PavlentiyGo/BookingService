@@ -47,5 +47,26 @@ func BookingModelToDomain(
 		ConferenceLink: booking.ConferenceLink,
 		CreatedAt:      booking.CreatedAt,
 	}
+}
 
+func RoomScheduleModelToDomain(
+	model RoomScheduleModel,
+) domain.RoomSchedule {
+	return domain.RoomSchedule{
+		ScheduleId: &model.ScheduleId,
+		RoomId:     model.RoomId,
+		DaysOfWeek: model.DaysOfWeek,
+		StartTime:  model.StartTime,
+		EndTime:    model.EndTime,
+	}
+}
+func RoomScheduleModelsToDomain(
+	models []RoomScheduleModel,
+) []domain.RoomSchedule {
+	schedules := make([]domain.RoomSchedule, len(models))
+
+	for i := 0; i < len(models); i++ {
+		schedules[i] = RoomScheduleModelToDomain(models[i])
+	}
+	return schedules
 }

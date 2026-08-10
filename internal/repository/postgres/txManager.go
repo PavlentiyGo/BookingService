@@ -20,6 +20,7 @@ type TxManager struct {
 	authRepo       repository.AuthRepository
 	bookingRepo    repository.BookingRepository
 	roomsRepo      repository.RoomsRepository
+	workerRepo     repository.WorkerRepository
 }
 type txCtxKey struct{}
 
@@ -33,6 +34,7 @@ func NewTxManager(
 	}
 	txManager.roomsRepo = postgres_repository.NewRoomsRepository(txManager)
 	txManager.bookingRepo = postgres_repository.NewBookingRepository(txManager)
+	txManager.workerRepo = postgres_repository.NewWorkerRepository(txManager)
 	return txManager
 }
 
@@ -42,7 +44,7 @@ func (m *TxManager) WithinTx(
 ) error {
 	tx, err := m.pool.Begin(ctx)
 	defer func() {
-		if err = tx.Rollback(ctx); err != nil {
+		if err = tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) {
 			logger := core_logger.FromContext(ctx)
 			logger.Error("failed to rollback transaction", zap.Error(err))
 		}
@@ -71,3 +73,4 @@ func (m *TxManager) GetRoomsRepo() repository.RoomsRepository {
 func (m *TxManager) GetBookingRepo() repository.BookingRepository {
 	return m.bookingRepo
 }
+func (m *TxManager) GetWorkerRepo() repository.WorkerRepository { return m.workerRepo }

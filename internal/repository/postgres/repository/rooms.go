@@ -167,7 +167,7 @@ func (r *roomsRepository) GetSlots(
 	LEFT JOIN bookings
 	ON slots.id = bookings.slot_id
 	WHERE 'cancelled' = COALESCE(bookings.status,'cancelled')
-	AND  slots.room_id = $1
+	AND slots.room_id = $1
 	AND slots.start_time::date = $2::date;
 	`
 	rows, err := r.TxManager.GetExecutor(ctx).Query(
@@ -177,7 +177,7 @@ func (r *roomsRepository) GetSlots(
 		dateTime,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to execure sql query: %w", err)
+		return nil, fmt.Errorf("failed to execute sql query: %w", err)
 	}
 	var slotsDomain []domain.Slot
 
@@ -195,4 +195,39 @@ func (r *roomsRepository) GetSlots(
 		slotsDomain = append(slotsDomain, models.SlotModelToDomain(model))
 	}
 	return slotsDomain, nil
+}
+
+func (r *roomsRepository) GetRoomsSchedule(
+	ctx context.Context,
+) ([]domain.RoomSchedule, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.TxManager.GetTimeout())
+	defer cancel()
+
+	sqlQuery := `
+	SELECT id,room_id,days_of_week,start_time,end_time
+	FROM schedules;
+	`
+
+	rows, err := r.TxManager.GetExecutor(ctx).Query(ctx, sqlQuery)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute query: %w", err)
+	}
+	var schedules []domain.RoomSchedule
+	for rows.Next() {
+		var model models.RoomScheduleModel
+
+		err = rows.Scan(
+			&model.ScheduleId,
+			&model.RoomId,
+			&model.DaysOfWeek,
+			&model.StartTime,
+			&model.EndTime,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("row scan: %w", err)
+		}
+
+		schedules = append(schedules, models.RoomScheduleModelToDomain(model))
+	}
+	return schedules, nil
 }

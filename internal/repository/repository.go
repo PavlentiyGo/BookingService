@@ -55,7 +55,21 @@ type RoomsRepository interface {
 		roomId uuid.UUID,
 		dateTime time.Time,
 	) ([]domain.Slot, error)
+
+	GetRoomsSchedule(
+		ctx context.Context,
+	) ([]domain.RoomSchedule, error)
 }
+type WorkerRepository interface {
+	CreateSlots(
+		ctx context.Context,
+		slots []domain.Slot,
+	) error
+	CleanSlots(
+		ctx context.Context,
+	) error
+}
+
 type Executor interface {
 	Exec(context.Context, string, ...any) (pgconn.CommandTag, error)
 	Query(context.Context, string, ...any) (pgx.Rows, error)
@@ -72,4 +86,5 @@ type TxManager interface {
 type Storage interface {
 	GetRoomsRepo() RoomsRepository
 	GetBookingRepo() BookingRepository
+	GetWorkerRepo() WorkerRepository
 }
