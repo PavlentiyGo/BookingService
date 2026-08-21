@@ -1,6 +1,9 @@
 package dto
 
-import "avitoBooking/internal/core/domain"
+import (
+	"avitoBooking/internal/core/domain"
+	"time"
+)
 
 type RoomDto struct {
 	Id          string `json:"id"`
@@ -66,4 +69,15 @@ type PaginationResponse struct {
 	Page     int `json:"page"`
 	PageSize int `json:"pageSize"`
 	Total    int `json:"total"`
+}
+type RegisterRequest struct {
+	Email    string `json:"email" validate:"required,email"`
+	Role     string `json:"role" validate:"required,oneof= user admin"`
+	Password string `json:"password" validate:"required"`
+}
+type UserDto struct {
+	Id        string    `json:"id"`
+	Email     string    `json:"email"`
+	Role      string    `json:"role"`
+	CreatedAt time.Time `json:"createdAt"`
 }

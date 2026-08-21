@@ -31,6 +31,10 @@ func (s *ConferenceService) CreateConferenceLink(
 
 	return link, nil
 }
-func (s *ConferenceService) CancelConference() {
+func (s *ConferenceService) CancelConference(_ context.Context, _ string) error {
+	if !s.available {
+		return core_errors.ErrConferenceServiceUnavailable
+	}
 
+	return nil
 }

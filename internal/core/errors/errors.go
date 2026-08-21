@@ -24,3 +24,4 @@ var ErrInvalidSlotId = errors.New("invalid slot id in request")
 var ErrSlotInThePast = errors.New("you can't book slot in the past")
 
 var ErrInvalidBookingId = errors.New("invalid booking id")
+var ErrEmailExists = errors.New("such email is already in use")

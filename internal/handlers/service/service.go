@@ -14,6 +14,10 @@ type BookingService interface {
 }
 
 type authService interface {
+	Register(
+		ctx context.Context,
+		user domain.User,
+	) (domain.User, error)
 }
 type bookingService interface {
 	CreateBooking(

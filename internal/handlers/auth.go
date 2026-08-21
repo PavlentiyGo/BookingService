@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"avitoBooking/internal/core/domain"
 	core_http_request "avitoBooking/internal/core/http/request"
 	"avitoBooking/internal/core/http/response"
 	"avitoBooking/internal/handlers/dto"
+	"avitoBooking/internal/handlers/mapper"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -18,13 +20,36 @@ func (h *Handlers) Register(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
+	ctx := r.Context()
+	responser := response.NewResponser(w, ctx)
 
+	var req dto.RegisterRequest
+	if err := core_http_request.DecodeAndValidate(r, &req); err != nil {
+		responser.ErrorResponse(err)
+		return
+	}
+	user := domain.User{
+		Role:     req.Role,
+		Email:    req.Email,
+		Password: []byte(req.Password),
+	}
+	registeredUser, err := h.service.Register(ctx, user)
+	if err != nil {
+		responser.ErrorResponse(err)
+		return
+	}
+	resp := map[string]dto.UserDto{
+		"user": mapper.UserDomainToDto(registeredUser),
+	}
+	responser.WriteJson(http.StatusCreated, resp)
 }
 
 func (h *Handlers) Login(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
+	//ctx := r.Context()
+	//responser := response.NewResponser(w, ctx)
 
 }
 

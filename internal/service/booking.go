@@ -3,19 +3,22 @@ package service
 import (
 	"avitoBooking/internal/core/domain"
 	core_errors "avitoBooking/internal/core/errors"
+	core_logger "avitoBooking/internal/core/logger"
 	"time"
 
 	"context"
 	"fmt"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 func (s *Service) CreateBooking(
 	ctx context.Context,
 	booking domain.BookingRequest,
 ) (domain.BookingRequest, error) {
-
+	Log := core_logger.FromContext(ctx)
+	Log = Log.With(zap.String("func", "createBooking"))
 	link, err := s.conferenceService.CreateConferenceLink(ctx, booking.SlotId)
 
 	if err != nil {
@@ -34,7 +37,10 @@ func (s *Service) CreateBooking(
 		}
 		newBooking, err := s.bookingRepo.CreateBooking(ctx, booking)
 		if err != nil {
-			s.conferenceService.CancelConference() // TODO дописать
+			newErr := s.conferenceService.CancelConference(nil, "")
+			if newErr != nil {
+				Log.Error("failed to cancel conference link", zap.String("link", link), zap.Error(newErr))
+			}
 			return fmt.Errorf("failed to create booking: %w", err)
 		}
 		answ = newBooking

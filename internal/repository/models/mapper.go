@@ -70,3 +70,15 @@ func RoomScheduleModelsToDomain(
 	}
 	return schedules
 }
+func UserModelToDomain(
+	user UserModel,
+) domain.User {
+	return domain.User{
+		Id:        user.Id,
+		Role:      user.Role,
+		Password:  user.Password,
+		CreatedAt: user.CreatedAt,
+		Email:     user.Email,
+	}
+
+}

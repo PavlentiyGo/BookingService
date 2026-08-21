@@ -32,6 +32,7 @@ func NewTxManager(
 		pool:           pool,
 		requestTimeout: timeout,
 	}
+	txManager.authRepo = postgres_repository.NewAuthRepository(txManager)
 	txManager.roomsRepo = postgres_repository.NewRoomsRepository(txManager)
 	txManager.bookingRepo = postgres_repository.NewBookingRepository(txManager)
 	txManager.workerRepo = postgres_repository.NewWorkerRepository(txManager)
@@ -74,3 +75,6 @@ func (m *TxManager) GetBookingRepo() repository.BookingRepository {
 	return m.bookingRepo
 }
 func (m *TxManager) GetWorkerRepo() repository.WorkerRepository { return m.workerRepo }
+func (m *TxManager) GetAuthRepo() repository.AuthRepository {
+	return m.authRepo
+}

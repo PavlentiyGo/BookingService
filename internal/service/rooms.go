@@ -86,7 +86,9 @@ func (s *Service) GetSlots(
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse dateTime: %w: %w", err, core_errors.ErrInvalidDateTime)
 	}
-	if dateTime.Before(time.Now()) {
+	now := time.Now()
+	nowDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	if dateTime.Before(nowDate) && dateTime != nowDate {
 		return nil, fmt.Errorf("date time must be after current date: %w", core_errors.ErrInvalidDateTime)
 	}
 

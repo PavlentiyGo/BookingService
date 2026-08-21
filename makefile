@@ -6,7 +6,7 @@ export LOGGER_FOLDER=${PROJECT_ROOT}/log
 
 env-up:
 	docker compose up -d --build && \
-	go run cmd/main.go
+	go run cmd/app/main.go
 
 
 migrate-up:

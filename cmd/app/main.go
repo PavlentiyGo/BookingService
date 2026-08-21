@@ -3,6 +3,7 @@ package main
 import (
 	"avitoBooking/internal/core/auth"
 	core_config "avitoBooking/internal/core/config"
+	core_hash "avitoBooking/internal/core/hash"
 	"avitoBooking/internal/core/http/server"
 	core_logger "avitoBooking/internal/core/logger"
 	core_middleware "avitoBooking/internal/core/middleware"
@@ -40,6 +41,9 @@ func main() {
 	logger.Debug("creating jwt provider")
 	jwtProvider := auth.NewJwtConfig(config.LifeTime, config.SigningKey)
 
+	logger.Debug("creating hasher")
+	hasher := core_hash.NewHasher(config)
+
 	logger.Debug("creating db pool")
 	pool, err := postgres.NewPool(parentCtx, config.DbConfig)
 	if err != nil {
@@ -55,7 +59,7 @@ func main() {
 	go worker.Start(ctxForWorker)
 
 	conferenceService := service.NewConferenceService(true)
-	serviceLayer := service.NewService(txManager, conferenceService, worker)
+	serviceLayer := service.NewService(txManager, conferenceService, worker, hasher)
 	handlersLayer := handlers.NewHandlers(jwtProvider, serviceLayer)
 
 	var routes []core_routes.Route

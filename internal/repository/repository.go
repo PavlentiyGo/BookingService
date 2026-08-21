@@ -11,6 +11,10 @@ import (
 )
 
 type AuthRepository interface {
+	Register(
+		ctx context.Context,
+		user domain.User,
+	) (domain.User, error)
 }
 type BookingRepository interface {
 	CreateBooking(
@@ -87,4 +91,5 @@ type Storage interface {
 	GetRoomsRepo() RoomsRepository
 	GetBookingRepo() BookingRepository
 	GetWorkerRepo() WorkerRepository
+	GetAuthRepo() AuthRepository
 }

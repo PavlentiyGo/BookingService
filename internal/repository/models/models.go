@@ -38,3 +38,10 @@ type BookingModel struct {
 	ConferenceLink *string
 	CreatedAt      time.Time
 }
+type UserModel struct {
+	Id        uuid.UUID
+	Role      string
+	Email     string
+	Password  []byte
+	CreatedAt time.Time
+}

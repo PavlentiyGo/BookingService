@@ -59,6 +59,7 @@ var errorSlice = []errorValue{
 	{mapError: repository_errors.ErrSlotNotFound, statusCode: http.StatusNotFound, error: core_errors.ErrInternalError.Error(), logLevel: "DEBUG"},
 	{mapError: core_errors.ErrSlotInThePast, statusCode: http.StatusBadRequest, error: core_errors.ErrInternalError.Error(), logLevel: "DEBUG"},
 	{mapError: core_errors.ErrInvalidBookingId, statusCode: http.StatusBadRequest, error: core_errors.ErrInternalError.Error(), logLevel: "DEBUG"},
+	{mapError: core_errors.ErrEmailExists, statusCode: http.StatusBadRequest, error: core_errors.ErrInternalError.Error(), logLevel: "DEBUG"},
 }
 
 func (r *Responser) ErrorResponse(
