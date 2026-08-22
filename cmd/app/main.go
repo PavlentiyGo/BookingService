@@ -7,7 +7,6 @@ import (
 	"avitoBooking/internal/core/http/server"
 	core_logger "avitoBooking/internal/core/logger"
 	core_middleware "avitoBooking/internal/core/middleware"
-	core_routes "avitoBooking/internal/core/routes"
 	"avitoBooking/internal/handlers"
 	"avitoBooking/internal/repository/postgres"
 	"avitoBooking/internal/service"
@@ -62,16 +61,9 @@ func main() {
 	serviceLayer := service.NewService(txManager, conferenceService, worker, hasher)
 	handlersLayer := handlers.NewHandlers(jwtProvider, serviceLayer)
 
-	var routes []core_routes.Route
-	routes = append(routes, handlersLayer.AuthRoutes()...)
-	routes = append(routes, handlersLayer.SlotsRoutes()...)
-	routes = append(routes, handlersLayer.ScheduleRoutes()...)
-	routes = append(routes, handlersLayer.BookingRoutes()...)
-	routes = append(routes, handlersLayer.RoomsRoutes()...)
-
 	server := core_http_server.NewServer(
 		config,
-		routes,
+		handlersLayer.GetAllRoutes(),
 		core_middleware.RequestId(),
 		core_middleware.Logger(logger),
 		core_middleware.Trace(),

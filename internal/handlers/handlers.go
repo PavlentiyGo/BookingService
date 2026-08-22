@@ -118,3 +118,15 @@ func (h *Handlers) BookingRoutes() []core_routes.Route {
 		},
 	}
 }
+
+func (h *Handlers) GetAllRoutes() []core_routes.Route {
+	routes := make([]core_routes.Route, 0, 12)
+
+	routes = append(routes, h.AuthRoutes()...)
+	routes = append(routes, h.SlotsRoutes()...)
+	routes = append(routes, h.ScheduleRoutes()...)
+	routes = append(routes, h.BookingRoutes()...)
+	routes = append(routes, h.RoomsRoutes()...)
+
+	return routes
+}

@@ -10,7 +10,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-func chainRoutes(routes ...core_routes.Route) *http.ServeMux {
+func ChainRoutes(routes ...core_routes.Route) *http.ServeMux {
 	mux := http.NewServeMux()
 	for _, route := range routes {
 
@@ -29,7 +29,7 @@ func NewServer(
 	middlewares ...core_middleware.Middleware,
 ) *http.Server {
 
-	mux := chainRoutes(routes...)
+	mux := ChainRoutes(routes...)
 
 	mux.Handle("/metrics", promhttp.Handler())
 

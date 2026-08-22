@@ -7,9 +7,10 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate go run github.com/vektra/mockery/v2@v2.53.5 --all --output=./mocks --outpkg=mocks
 type BookingService interface {
 	authService
-	bookingService
+	bookService
 	roomsService
 }
 
@@ -23,7 +24,7 @@ type authService interface {
 		user domain.User,
 	) (domain.User, error)
 }
-type bookingService interface {
+type bookService interface {
 	CreateBooking(
 		ctx context.Context,
 		booking domain.BookingRequest,

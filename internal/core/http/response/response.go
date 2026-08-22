@@ -36,6 +36,13 @@ type errorValue struct {
 	error      string
 	logLevel   string
 }
+type ErrorResponse struct {
+	Error Error `json:"error"`
+}
+type Error struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
 
 var errorSlice = []errorValue{
 	{mapError: core_errors.ErrExpiredToken, statusCode: http.StatusBadRequest, error: core_errors.ErrInvalidRequest.Error(), logLevel: "DEBUG"},
@@ -94,11 +101,8 @@ func (r *Responser) writeErrorJson(
 	message string,
 ) {
 
-	response := map[string]struct {
-		Code    string `json:"code"`
-		Message string `json:"message"`
-	}{
-		"error": {
+	response := ErrorResponse{
+		Error: Error{
 			Code:    error,
 			Message: message,
 		},

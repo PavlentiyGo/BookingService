@@ -16,6 +16,7 @@ type Token struct {
 	Role   string    `json:"role"`
 }
 
+//go:generate go run github.com/vektra/mockery/v2@v2.53.5 --all --output=./mocks --outpkg=mocks
 type JwtProvider interface {
 	NewToken(role string, userId uuid.UUID) (string, error)
 	ParseToken(tokenString string) (Token, error)
