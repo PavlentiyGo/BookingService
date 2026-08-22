@@ -21,3 +21,21 @@ func (s *Service) Register(
 	}
 	return newUser, nil
 }
+
+func (s *Service) Login(
+	ctx context.Context,
+	user domain.User,
+) (domain.User, error) {
+	if err := user.Validate(); err != nil {
+		return domain.User{}, err
+	}
+
+	userFromDb, err := s.authRepo.GetUserByEmail(ctx, user.Email)
+	if err != nil {
+		return domain.User{}, err
+	}
+	if err = s.hasher.Compare(user.Password, userFromDb.Password); err != nil {
+		return domain.User{}, err
+	}
+	return userFromDb, nil
+}
