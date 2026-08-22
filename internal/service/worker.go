@@ -143,11 +143,3 @@ func (w *Worker) calcNextWeekday(weekdayNumber int) time.Time {
 	nextDay := time.Date(day.Year(), day.Month(), day.Day(), 0, 0, 0, 0, time.UTC)
 	return nextDay
 }
-
-//# 1. Получаем токен один раз и сохраняем в переменную
-//TOKEN=$(curl -s -X POST http://localhost:8080/dummyLogin -d '{"role": "user"}' | jq -r '.token')
-//
-//# 2. Запускаем vegeta, подставляя токен в хедер
-//echo "GET http://localhost:8080/api/rooms/00000000-0000-0000-0000-000000000001/slots?date=2026-08-20" | \
-//vegeta attack -duration=30s -rate=100/1s -header="Authorization: Bearer $TOKEN" | \
-//vegeta report -type=text
